@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package bank;
+
+// Define the request message from Customer to Branch
+message Request {
+    int32 id = 1;                // Unique identifier for the request or event
+    string interface = 2;        // Type of request: "deposit", "withdraw", "query"
+    int32 money = 3;             // Money amount, used for deposit and withdraw
+}
+
+// Define the response message from Branch to Customer
+message Response {
+    string result = 1;           // "success" or "fail" for deposit and withdraw
+    int32 balance = 2;           // Current balance, used for query responses
+}
+
+// Define the BankService with Customer-Branch and Branch-Branch communication
+service BankService {
+    // Customer to Branch: Main delivery interface for customer requests
+    rpc MsgDelivery (Request) returns (Response);
+
+    // Branch to Branch: Propagate balance updates for consistency across replicas
+    rpc Propagate_Deposit (Request) returns (Response);
+    rpc Propagate_Withdraw (Request) returns (Response);
+}
