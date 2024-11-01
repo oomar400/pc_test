@@ -28,7 +28,6 @@ class Customer:
                     money=event.get("money", 0)
                 )
 
-                # Add delay before each operation to ensure system stability
                 time.sleep(0.2)
 
                 # Execute request
@@ -47,7 +46,7 @@ class Customer:
                     })
 
                 # Add delay after operation to ensure propagation completes
-                time.sleep(0.5)
+                time.sleep(1)
 
             except Exception as e:
                 print(f"Error executing event {event['id']} for customer {self.id}: {e}")
