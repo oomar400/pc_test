@@ -38,12 +38,12 @@ def serve_branch(branch_info):
 def main():
     branches = load_branches("input.json")
 
-    # Start each branch in a separate thread and ensure all are up before customers connect
+    # Start each branch in a separate thread
     branch_threads = []
     for branch_info in branches:
         thread = futures.ThreadPoolExecutor().submit(serve_branch, branch_info)
         branch_threads.append(thread)
-        time.sleep(0.1)  # Small delay to avoid simultaneous port binding issues
+        time.sleep(0.1)
 
     # Join all threads to keep the main process running
     for thread in branch_threads:

@@ -28,7 +28,7 @@ class Customer:
                     money=event.get("money", 0)
                 )
 
-                time.sleep(0.2)
+                time.sleep(0.1)
 
                 # Execute request
                 response = self.stub.MsgDelivery(request)
@@ -46,7 +46,7 @@ class Customer:
                     })
 
                 # Add delay after operation to ensure propagation completes
-                time.sleep(1)
+                time.sleep(0.5)
 
             except Exception as e:
                 print(f"Error executing event {event['id']} for customer {self.id}: {e}")

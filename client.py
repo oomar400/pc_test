@@ -20,7 +20,7 @@ def main():
                 "id": customer.id,
                 "recv": customer.recvMsg
             })
-            time.sleep(0.1)  # Ensure propagation
+            time.sleep(0.1)
 
     # Write all responses to output
     with open('output.json', 'w') as f:
