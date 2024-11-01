@@ -38,7 +38,7 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
             return banks_pb2.Response(result="fail")
         
         elif request.interface == "query":
-            time.sleep(0.2)
+            time.sleep(3)
             return banks_pb2.Response(balance=self.balance)
 
     def propagate_to_other_branches(self, action, amount):
