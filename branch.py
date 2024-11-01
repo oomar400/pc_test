@@ -26,17 +26,19 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
 
     def MsgDelivery(self, request, context):
         if request.interface == "deposit":
+            self.balance += request.money
             self.propagate_to_other_branches("deposit", request.money)
             return banks_pb2.Response(result="success")
         
         elif request.interface == "withdraw":
             if self.balance >= request.money:
+                self.balance -= request.money
                 self.propagate_to_other_branches("withdraw", request.money)
                 return banks_pb2.Response(result="success")
             return banks_pb2.Response(result="fail")
         
         elif request.interface == "query":
-            time.sleep(0.5)
+            time.sleep(0.2)
             return banks_pb2.Response(balance=self.balance)
 
     def propagate_to_other_branches(self, action, amount):
