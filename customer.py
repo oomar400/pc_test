@@ -46,7 +46,7 @@ class Customer:
                     })
 
                 # Add delay after operation to ensure propagation completes
-                time.sleep(2)
+                time.sleep(1)
 
             except Exception as e:
                 print(f"Error executing event {event['id']} for customer {self.id}: {e}")
