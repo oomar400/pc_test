@@ -6,9 +6,10 @@ def main():
     with open('input.json') as f:
         data = json.load(f)
 
-    customer_responses = []
-    
-    # Process all customers in sequence
+    customers = []
+    withdraw_responses = []
+
+    # Process all entries in order (deposits will come first, then withdraws)
     for entry in data:
         if entry["type"] == "customer":
             customer = Customer(entry["id"], entry["events"])
@@ -16,17 +17,20 @@ def main():
             customer.createStub()
             customer.executeEvents()
             
-            # Store each customer's operation + query results
-            customer_responses.append({
-                "id": customer.id,
-                "recv": customer.recvMsg
-            })
+            # If this is a withdraw operation (second half of customers in input), save response
+            if "withdraw" in str(entry["events"]):
+                withdraw_responses.append({
+                    "id": customer.id,
+                    "recv": customer.recvMsg
+                })
             time.sleep(0.1)  # Ensure propagation
 
-    # Sort by customer ID and write to output
-    customer_responses.sort(key=lambda x: x["id"])
+    # Sort withdraw responses by customer ID
+    withdraw_responses.sort(key=lambda x: x["id"])
+
+    # Write only withdraw responses to output
     with open('output.json', 'w') as f:
-        json.dump(customer_responses, f, indent=4)
+        json.dump(withdraw_responses, f, indent=4)
 
 if __name__ == "__main__":
     main()
