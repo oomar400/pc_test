@@ -2,6 +2,7 @@ import grpc
 import banks_pb2
 import banks_pb2_grpc
 from concurrent import futures
+import time
 
 class Branch(banks_pb2_grpc.BankServiceServicer):
     def __init__(self, id, balance, branches):
@@ -25,16 +26,12 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
 
     def MsgDelivery(self, request, context):
         if request.interface == "deposit":
-            # Propagate first, then update local
             self.propagate_to_other_branches("deposit", request.money)
-            self.balance += request.money
             return banks_pb2.Response(result="success")
         
         elif request.interface == "withdraw":
             if self.balance >= request.money:
-                # Propagate first, then update local
                 self.propagate_to_other_branches("withdraw", request.money)
-                self.balance -= request.money
                 return banks_pb2.Response(result="success")
             return banks_pb2.Response(result="fail")
         

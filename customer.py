@@ -42,8 +42,6 @@ class Customer:
                         "result": response.result
                     })
 
-                # Add delay after operation to ensure propagation completes
-         
 
             except Exception as e:
                 print(f"Error executing event {event['id']} for customer {self.id}: {e}")
