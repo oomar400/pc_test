@@ -53,7 +53,7 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
         except Exception as e:
             print(f"Deposit propagation failed: {e}")
             return False
-
+as
     def propagate_withdraw(self, amount, stub):
         try:
             response = stub.Propagate_Withdraw(
