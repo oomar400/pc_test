@@ -25,35 +25,44 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
 
     def MsgDelivery(self, request, context):
         if request.interface == "deposit":
-            self.balance += request.money
-            success = True
-            for stub in self.stubList:
-                try:
-                    response = stub.Propagate_Deposit(request)
-                    if response.result != "success":
-                        success = False
-                except Exception as e:
-                    print(f"Propagation failed: {e}")
-                    success = False
-            return banks_pb2.Response(result="success" if success else "fail")
-        
+            all_success = all(self.propagate_deposit(request.money, stub) 
+                            for stub in self.stubList)
+            if all_success:
+                self.balance += request.money
+                return banks_pb2.Response(result="success")
+            return banks_pb2.Response(result="fail")
+
         elif request.interface == "withdraw":
             if self.balance >= request.money:
-                self.balance -= request.money
-                success = True
-                for stub in self.stubList:
-                    try:
-                        response = stub.Propagate_Withdraw(request)
-                        if response.result != "success":
-                            success = False
-                    except Exception as e:
-                        print(f"Propagation failed: {e}")
-                        success = False
-                return banks_pb2.Response(result="success" if success else "fail")
+                all_success = all(self.propagate_withdraw(request.money, stub) 
+                                for stub in self.stubList)
+                if all_success:
+                    self.balance -= request.money
+                    return banks_pb2.Response(result="success")
             return banks_pb2.Response(result="fail")
-        
+
         elif request.interface == "query":
             return banks_pb2.Response(balance=self.balance)
+
+    def propagate_deposit(self, amount, stub):
+        try:
+            response = stub.Propagate_Deposit(
+                banks_pb2.Request(interface="deposit", money=amount)
+            )
+            return response.result == "success"
+        except Exception as e:
+            print(f"Deposit propagation failed: {e}")
+            return False
+
+    def propagate_withdraw(self, amount, stub):
+        try:
+            response = stub.Propagate_Withdraw(
+                banks_pb2.Request(interface="withdraw", money=amount)
+            )
+            return response.result == "success"
+        except Exception as e:
+            print(f"Withdraw propagation failed: {e}")
+            return False
 
     def Propagate_Deposit(self, request, context):
         self.balance += request.money

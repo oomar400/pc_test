@@ -20,7 +20,6 @@ def main():
                 "id": customer.id,
                 "recv": customer.recvMsg
             })
-            time.sleep(0.5)
     # Write all responses to output
     with open('output.json', 'w') as f:
         json.dump(all_responses, f, indent=4)
