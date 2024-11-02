@@ -23,22 +23,20 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
                 except Exception as e:
                     print(f"Failed to connect to Branch {branch_id}: {e}")
 
+    # attempting to force wait with a while loop
     def MsgDelivery(self, request, context):
         if request.interface == "deposit":
-            all_success = all(self.propagate_deposit(request.money, stub) 
-                            for stub in self.stubList)
-            if all_success:
-                self.balance += request.money
-                return banks_pb2.Response(result="success")
-            return banks_pb2.Response(result="fail")
+            while not all(self.propagate_deposit(request.money, stub) for stub in self.stubList):
+                continue
+            self.balance += request.money
+            return banks_pb2.Response(result="success")
 
         elif request.interface == "withdraw":
             if self.balance >= request.money:
-                all_success = all(self.propagate_withdraw(request.money, stub) 
-                                for stub in self.stubList)
-                if all_success:
-                    self.balance -= request.money
-                    return banks_pb2.Response(result="success")
+                while not all(self.propagate_withdraw(request.money, stub) for stub in self.stubList):
+                    continue
+                self.balance -= request.money
+                return banks_pb2.Response(result="success")
             return banks_pb2.Response(result="fail")
 
         elif request.interface == "query":
