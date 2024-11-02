@@ -2,6 +2,7 @@ import grpc
 import banks_pb2
 import banks_pb2_grpc
 from concurrent import futures
+import time
 
 class Branch(banks_pb2_grpc.BankServiceServicer):
     def __init__(self, id, balance, branches):
@@ -23,44 +24,32 @@ class Branch(banks_pb2_grpc.BankServiceServicer):
                 except Exception as e:
                     print(f"Failed to connect to Branch {branch_id}: {e}")
 
-    # attempting to force wait with a while loop
     def MsgDelivery(self, request, context):
         if request.interface == "deposit":
-            while not all(self.propagate_deposit(request.money, stub) for stub in self.stubList):
-                continue
             self.balance += request.money
+            self.propagate_to_other_branches("deposit", request.money)
             return banks_pb2.Response(result="success")
-
+        
         elif request.interface == "withdraw":
             if self.balance >= request.money:
-                while not all(self.propagate_withdraw(request.money, stub) for stub in self.stubList):
-                    continue
                 self.balance -= request.money
+                self.propagate_to_other_branches("withdraw", request.money)
                 return banks_pb2.Response(result="success")
             return banks_pb2.Response(result="fail")
-
+        
         elif request.interface == "query":
             return banks_pb2.Response(balance=self.balance)
 
-    def propagate_deposit(self, amount, stub):
-        try:
-            response = stub.Propagate_Deposit(
-                banks_pb2.Request(interface="deposit", money=amount)
-            )
-            return response.result == "success"
-        except Exception as e:
-            print(f"Deposit propagation failed: {e}")
-            return False
-
-    def propagate_withdraw(self, amount, stub):
-        try:
-            response = stub.Propagate_Withdraw(
-                banks_pb2.Request(interface="withdraw", money=amount)
-            )
-            return response.result == "success"
-        except Exception as e:
-            print(f"Withdraw propagation failed: {e}")
-            return False
+    def propagate_to_other_branches(self, action, amount):
+        for stub in self.stubList:
+            try:
+                request = banks_pb2.Request(interface=action, money=amount)
+                if action == "deposit":
+                    stub.Propagate_Deposit(request)
+                else:  # withdraw
+                    stub.Propagate_Withdraw(request)
+            except Exception as e:
+                print(f"Propagation failed: {e}")
 
     def Propagate_Deposit(self, request, context):
         self.balance += request.money

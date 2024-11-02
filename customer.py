@@ -32,6 +32,7 @@ class Customer:
 
                 # Process response
                 if event["interface"] == "query":
+                    time.sleep(3)
                     self.recvMsg.append({
                         "interface": "query",
                         "balance": response.balance
