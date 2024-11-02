@@ -15,12 +15,12 @@ def main():
             customer.createStub()
             customer.executeEvents()
             
-            # Save every customer response (both deposits and withdrawals)
             all_responses.append({
                 "id": customer.id,
                 "recv": customer.recvMsg
             })
-    # Write all responses to output
+            time.sleep(2)
+
     with open('output.json', 'w') as f:
         json.dump(all_responses, f, indent=4)
 
